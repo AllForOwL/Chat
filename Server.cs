@@ -39,12 +39,12 @@ namespace Chat
         {
             m_appServer.Stop();
         }
-        static void appServer_NewMessageReceived(WebSocketSession session, string message)
+        void appServer_NewMessageReceived(WebSocketSession session, string message)
         {
-            //Send the received message back
-            session.Send("From Server: " + message);
-
-            MessageBox.Show("Server: " + message);
+            foreach (var s in m_appServer.GetAllSessions())
+            {
+                s.Send(message);
+            }
         }
     }
 }
