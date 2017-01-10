@@ -1,0 +1,8 @@
+﻿bin
+obj
+Properties
+*.config
+*.csproj
+*.sln
+Form1.*
+*.suo
