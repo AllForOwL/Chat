@@ -15,12 +15,18 @@ using SuperWebSocket.SubProtocol;
 using WebSocket4Net;
 using System.Diagnostics;
 using Microsoft;
+using System.Windows.Forms;
 
 namespace Chat
 {
     class Client
     {
-        protected WebSocketServer m_WebSocketServer;
+        protected string Host
+        {
+            get { return "ws://127.0.0.1"; }
+        }
+
+        protected WebSocket m_WebSocketClient = new WebSocket(string.Format("{0}:{1}/websocket", "ws://127.0.0.1", 2012), "basic");
         protected AutoResetEvent m_MessageReceiveEvent = new AutoResetEvent(false);
         protected AutoResetEvent m_OpenedEvent = new AutoResetEvent(false);
         protected AutoResetEvent m_CloseEvent = new AutoResetEvent(false);
@@ -32,53 +38,43 @@ namespace Chat
         private string m_CertificateFile;
         private string m_Password;
 
-        protected virtual string Host
+        public void StartClient()
         {
-            get { return "ws://127.0.0.1"; }
-        }
-
-        void StartClient()
-        {
-            WebSocket webSocketClient = new WebSocket("ws://echo.websocket.org/");
-            webSocketClient.Error += new EventHandler<SuperSocket.ClientEngine.ErrorEventArgs>(webSocketClient_Error);
-            webSocketClient.AllowUnstrustedCertificate = true;
-            webSocketClient.Opened += new EventHandler(webSocketClient_Opened);
-            webSocketClient.Closed += new EventHandler(webSocketClient_Closed);
-            webSocketClient.MessageReceived += new EventHandler<MessageReceivedEventArgs>(webSocketClient_MessageReceived);
-            webSocketClient.Open();
+            m_WebSocketClient.Error += new EventHandler<SuperSocket.ClientEngine.ErrorEventArgs>(m_WebSocketClient_Error);
+            m_WebSocketClient.AllowUnstrustedCertificate = true;
+            m_WebSocketClient.Opened += new EventHandler(m_WebSocketClient_Opened);
+            m_WebSocketClient.Closed += new EventHandler(m_WebSocketClient_Closed);
+            m_WebSocketClient.MessageReceived += new EventHandler<MessageReceivedEventArgs>(m_WebSocketClient_MessageReceived);
+            m_WebSocketClient.Open();
 
             if (!m_OpenedEvent.WaitOne(5000))
             {
-            //    Assert.Fail("Failed to Opened session ontime");
+                
             }
 
-            //Assert.AreEqual(WebSocketState.Open, webSocketClient.State);
+            //for (var i = 0; i < 10; i++)
+            //{
+            //    var message = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < 10; i++)
-            {
-                var message = Guid.NewGuid().ToString();
+            //    m_WebSocketClient.Send(message);
 
-                webSocketClient.Send(message);
+            //    if (!m_MessageReceiveEvent.WaitOne(5000))
+            //    {
+            //       // Assert.Fail("Failed to get echo messsage on time");
+            //        break;
+            //    }
 
-                if (!m_MessageReceiveEvent.WaitOne(5000))
-                {
-                   // Assert.Fail("Failed to get echo messsage on time");
-                    break;
-                }
-
-                Console.WriteLine("Received echo message: {0}", m_CurrentMessage);
-                //Assert.AreEqual(m_CurrentMessage, message);
-            }
-
-            webSocketClient.Close();
-
-            if (!m_CloseEvent.WaitOne(5000))
-            {
- 
-            }
+            //    Console.WriteLine("Received echo message: {0}", m_CurrentMessage);
+            //    //Assert.AreEqual(m_CurrentMessage, message);
+            //}
         }
 
-        protected void webSocketClient_Error(object sender, SuperSocket.ClientEngine.ErrorEventArgs e)
+        public void SendMessage(string i_message)
+        {
+            m_WebSocketClient.Send(i_message);
+        }
+
+        protected void m_WebSocketClient_Error(object sender, SuperSocket.ClientEngine.ErrorEventArgs e)
         {
             Console.WriteLine(e.Exception.GetType() + ":" + e.Exception.Message + Environment.NewLine + e.Exception.StackTrace);
 
@@ -90,43 +86,45 @@ namespace Chat
 
         public void CloseWebSocketTest()
         {
-            WebSocket webSocketClient = new WebSocket(string.Format("{0}:{1}/websocket", Host, m_WebSocketServer.Config.Port), "basic", m_Version);
-            webSocketClient.AllowUnstrustedCertificate = true;
-            webSocketClient.Opened += new EventHandler(webSocketClient_Opened);
-            webSocketClient.Closed += new EventHandler(webSocketClient_Closed);
-            webSocketClient.MessageReceived += new EventHandler<MessageReceivedEventArgs>(webSocketClient_MessageReceived);
-            webSocketClient.Open();
+            //WebSocket m_WebSocketClient = new WebSocket(string.Format("{0}:{1}/websocket", Host, m_WebSocketClient.Config.Port), "basic", m_Version);
+            //m_WebSocketClient.AllowUnstrustedCertificate = true;
+            //m_WebSocketClient.Opened += new EventHandler(m_WebSocketClient_Opened);
+            //m_WebSocketClient.Closed += new EventHandler(m_WebSocketClient_Closed);
+            //m_WebSocketClient.MessageReceived += new EventHandler<MessageReceivedEventArgs>(m_WebSocketClient_MessageReceived);
+            //m_WebSocketClient.Open();
 
-            if (!m_OpenedEvent.WaitOne(2000))
-            {
+            //if (!m_OpenedEvent.WaitOne(2000))
+            //{
  
-            }
-               // Assert.Fail("Failed to Opened session ontime");
+            //}
+            //   // Assert.Fail("Failed to Opened session ontime");
 
-            //Assert.AreEqual(WebSocketState.Open, webSocketClient.State);
+            ////Assert.AreEqual(WebSocketState.Open, m_WebSocketClient.State);
 
-            webSocketClient.Send("QUIT");
+            //m_WebSocketClient.Send("QUIT");
 
-            if (!m_CloseEvent.WaitOne(1000))
-            {
+            //if (!m_CloseEvent.WaitOne(1000))
+            //{
  
-            }//Assert.Fail("Failed to close session ontime");
+            //}//Assert.Fail("Failed to close session ontime");
 
-            //Assert.AreEqual(WebSocketState.Closed, webSocketClient.State);
+            //Assert.AreEqual(WebSocketState.Closed, m_WebSocketClient.State);
         }
 
-        protected void webSocketClient_MessageReceived(object sender, MessageReceivedEventArgs e)
+        protected void m_WebSocketClient_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
             m_CurrentMessage = e.Message;
             m_MessageReceiveEvent.Set();
+
+            MessageBox.Show(m_CurrentMessage);  
         }
 
-        protected void webSocketClient_Closed(object sender, EventArgs e)
+        protected void m_WebSocketClient_Closed(object sender, EventArgs e)
         {
             m_CloseEvent.Set();
         }
 
-        protected void webSocketClient_Opened(object sender, EventArgs e)
+        protected void m_WebSocketClient_Opened(object sender, EventArgs e)
         {
             m_OpenedEvent.Set();
         }

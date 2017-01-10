@@ -1,62 +1,50 @@
-﻿using System;
+﻿using System; 
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SuperSocket.SocketBase;
 using SuperWebSocket;
+using System.Windows.Forms;
+using SuperSocket.SocketBase.Config;
+using SuperSocket.SocketBase.Logging;
 
 namespace Chat
 {
     class Server
     {
-        void StartServer()
+        WebSocketServer m_appServer = new WebSocketServer(); 
+        public void StartServer()
         {
-            Console.WriteLine("Press any key to start the WebSocketServer!");
-
-            Console.ReadKey();
-            Console.WriteLine();
-
-            var appServer = new WebSocketServer();
-
             //Setup the appServer
-            if (!appServer.Setup(2012)) //Setup with listening port
+            m_appServer.Setup(new ServerConfig
             {
-                Console.WriteLine("Failed to setup!");
-                Console.ReadKey();
-                return;
-            }
+                Port = 2012,
+                Ip = "Any",
+                MaxConnectionNumber = 100,
+                Mode = SocketMode.Tcp,
+                Name = "SuperWebSocket Server"
+            }, logFactory: new ConsoleLogFactory());
 
-            appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
-
-            Console.WriteLine();
+            m_appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
 
             //Try to start the appServer
-            if (!appServer.Start())
+            if (!m_appServer.Start())
             {
-                Console.WriteLine("Failed to start!");
-                Console.ReadKey();
                 return;
             }
 
-            Console.WriteLine("The server started successfully, press key 'q' to stop it!");
-
-            while (Console.ReadKey().KeyChar != 'q')
-            {
-                Console.WriteLine();
-                continue;
-            }
-
-            //Stop the appServer
-            appServer.Stop();
-
-            Console.WriteLine();
-            Console.WriteLine("The server was stopped!");
-            Console.ReadKey();
+            MessageBox.Show("Сервер запущений!");
+        }
+        public void Stop()
+        {
+            m_appServer.Stop();
         }
         static void appServer_NewMessageReceived(WebSocketSession session, string message)
         {
             //Send the received message back
-            session.Send("Server: " + message);
+            session.Send("From Server: " + message);
+
+            MessageBox.Show("Server: " + message);
         }
     }
 }
