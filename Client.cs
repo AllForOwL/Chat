@@ -16,7 +16,6 @@ using WebSocket4Net;
 using System.Diagnostics;
 using Microsoft;
 using System.Windows.Forms;
-using System.Collections.Generic;
 
 namespace Chat
 {
@@ -117,8 +116,3 @@ namespace Chat
 
     }
 }
-
-
-/*
- * Add Database for save hitory Messages
- */
